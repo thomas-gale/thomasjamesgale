@@ -2,9 +2,9 @@
 
 Plan:
 
-0) scaffolding & deps
+0. scaffolding & deps
 
-ui: tailwindcss @radix-ui/react-* class-variance-authority (or shadcn)
+ui: tailwindcss @radix-ui/react-\* class-variance-authority (or shadcn)
 
 three/r3f: three @react-three/fiber @react-three/drei
 
@@ -14,100 +14,99 @@ utils: valtio (state), react-spring (subtle ui motion), zod (schema)
 
 seo: next-seo next-sitemap
 
- set up tailwind + a minimal design token (brand colour palette)
+set up tailwind + a minimal design token (brand colour palette)
 
- set up eslint/prettier and npm scripts (dev, build, lint, typecheck)
+set up eslint/prettier and npm scripts (dev, build, lint, typecheck)
 
 files
 
 /app
-  /api
-  /skills/ (optional JSON route later)
-  layout.tsx
-  page.tsx
-  globals.css
+/api
+/skills/ (optional JSON route later)
+layout.tsx
+page.tsx
+globals.css
 /src
-  /components
-  /gl        # r3f scene bits
-  /lib       # linkedin ingest, schema helpers
-  /types
+/components
+/gl # r3f scene bits
+/lib # linkedin ingest, schema helpers
+/types
 
-1) content ingestion (linkedin → typed data)
+1. content ingestion (linkedin → typed data)
 
 avoid scraping; prefer manual export + a tiny mapping script.
 
- export linkedin data (settings → data privacy → get a copy of your data → “resume pdf” and “profile” json if available)
+export linkedin data (settings → data privacy → get a copy of your data → “resume pdf” and “profile” json if available)
 
- write a small parser to map to your site schema:
+write a small parser to map to your site schema:
 
- src/types/profile.ts (Person, Experience, Project, Skill)
+src/types/profile.ts (Person, Experience, Project, Skill)
 
- src/lib/ingest/linkedin.ts (pure function mapping json → typed data)
+src/lib/ingest/linkedin.ts (pure function mapping json → typed data)
 
- store curated data in repo for now: content/profile.json, content/skills.json
+store curated data in repo for now: content/profile.json, content/skills.json
 
- create a minimal cms-less accessor: src/lib/data.ts that returns objects
+create a minimal cms-less accessor: src/lib/data.ts that returns objects
 
 acceptance
 
 page builds without network; console.log(getSkills()) shows your curated list
 
-2) central uikit card (“Engineer of things”)
+2. central uikit card (“Engineer of things”)
 
- component: src/components/ProfileCard.tsx
+component: src/components/ProfileCard.tsx
 
 avatar (rounded), name, 1-liner “Engineer of things”
 
 buttons: “email”, “github”, “gale systems”
 
- keyboard focusable; high contrast; respects prefers-reduced-motion
+keyboard focusable; high contrast; respects prefers-reduced-motion
 
- responsive: centered on mobile; max-width ~420–520px
+responsive: centered on mobile; max-width ~420–520px
 
 acceptance
 
 lighthouse a11y ≥ 95; tab order sane; works with js disabled (card still renders)
 
-3) skill system data → visual tokens
+3. skill system data → visual tokens
 
- define skill model with display props:
+define skill model with display props:
 
 type Skill = {
-  id: string; label: string; level?: 1|2|3;
-  color?: string; shape?: "box"|"sphere"|"capsule"|"tetra";
-  weight?: number; // affects orbit radius / mass
+id: string; label: string; level?: 1|2|3;
+color?: string; shape?: "box"|"sphere"|"capsule"|"tetra";
+weight?: number; // affects orbit radius / mass
 }
 
+create content/skills.json with 20–40 items (short labels)
 
- create content/skills.json with 20–40 items (short labels)
-
- utility to assign defaults (color/shape) deterministically from label hash
+utility to assign defaults (color/shape) deterministically from label hash
 
 acceptance
 
 deterministic visuals across sessions w/out storing user state
 
-4) r3f scene: orbiting physics swarm
+4. r3f scene: orbiting physics swarm
 
- scene wrapper: src/gl/Scene.tsx (Canvas, camera, lights)
+scene wrapper: src/gl/Scene.tsx (Canvas, camera, lights)
 
- physics world: @react-three/rapier <Physics gravity={[0,0,0]}>
+physics world: @react-three/rapier <Physics gravity={[0,0,0]}>
 
- central “no-go” collider around the card (soft boundary)
+central “no-go” collider around the card (soft boundary)
 
- spawn skill bodies:
+spawn skill bodies:
 
- randomised initial positions on a torus/sphere shell
+randomised initial positions on a torus/sphere shell
 
- gentle orbital forces (custom hook adds tangential impulse per tick)
+gentle orbital forces (custom hook adds tangential impulse per tick)
 
- varied mass/drag based on weight
+varied mass/drag based on weight
 
- shapes:
+shapes:
 
- mesh components per shape; use Text from drei for labels (or dynamic sprite text)
+mesh components per shape; use Text from drei for labels (or dynamic sprite text)
 
- Billboard or per-hover re-orientation (see §5)
+Billboard or per-hover re-orientation (see §5)
 
 acceptance
 
@@ -115,29 +114,29 @@ acceptance
 
 when physics paused, swarm freezes gracefully
 
-5) interaction: hover/touch focus + readability
+5. interaction: hover/touch focus + readability
 
- raycasting: pointer move picks nearest skill
+raycasting: pointer move picks nearest skill
 
- on hover/focus:
+on hover/focus:
 
- temporarily increase linear damping of that body
+temporarily increase linear damping of that body
 
- apply impulse toward camera (or to a focus anchor in front of card)
+apply impulse toward camera (or to a focus anchor in front of card)
 
- smoothly orient text toward camera (slerp quaternion)
+smoothly orient text toward camera (slerp quaternion)
 
- upscale label slightly, increase contrast, add subtle bloom/glow (optional)
+upscale label slightly, increase contrast, add subtle bloom/glow (optional)
 
- on hover lost:
+on hover lost:
 
- restore damping/mass over 0.5–1s; return to orbit flow
+restore damping/mass over 0.5–1s; return to orbit flow
 
- mobile:
+mobile:
 
- single tap selects/locks focus; tap outside to release
+single tap selects/locks focus; tap outside to release
 
- optional: drag to “swim” the field (cursor gravity)
+optional: drag to “swim” the field (cursor gravity)
 
 acceptance
 
@@ -145,91 +144,89 @@ pointer over a shape makes it legible within ~250ms, no jitter
 
 mobile tap toggles focus; second tap elsewhere releases
 
-6) performance & fallbacks
+6. performance & fallbacks
 
- instancing: use Instances for repeated shapes (boxes/spheres)
+instancing: use Instances for repeated shapes (boxes/spheres)
 
- text strategy:
+text strategy:
 
- prefer Text (msdf) with low weight; or pre-baked sprite-text for small sizes
+prefer Text (msdf) with low weight; or pre-baked sprite-text for small sizes
 
- cap visible label detail when distance > threshold (fade text, keep colour)
+cap visible label detail when distance > threshold (fade text, keep colour)
 
- suspend canvas until in viewport; SSR rest of page
+suspend canvas until in viewport; SSR rest of page
 
- prefers-reduced-motion: disable physics, render static constellation
+prefers-reduced-motion: disable physics, render static constellation
 
- defensive bounds: stop sim on background tab (page visibility)
+defensive bounds: stop sim on background tab (page visibility)
 
 acceptance
 
 web vitals good (LCP < 2.5s on wifi); memory stable during 60s idle
 
-7) layout & compose page
+7. layout & compose page
 
- app/page.tsx layout grid:
+app/page.tsx layout grid:
 
 center column: ProfileCard
 
 background: absolute Scene layer (z-behind)
 
- ensure card remains topmost, pointer events pass through to scene except on controls
+ensure card remains topmost, pointer events pass through to scene except on controls
 
- dark mode default (brand accents), readable in light too
+dark mode default (brand accents), readable in light too
 
-8) polish
+8. polish
 
- subtle ambient audio toggle? (off by default)
+subtle ambient audio toggle? (off by default)
 
- motion blur/bloom minimal preset on desktop only
+motion blur/bloom minimal preset on desktop only
 
- shadow under card to ground the composition
+shadow under card to ground the composition
 
- tasteful entrance animation (fade/scale) obeying motion settings
+tasteful entrance animation (fade/scale) obeying motion settings
 
-9) seo, meta, analytics
+9. seo, meta, analytics
 
- next-seo default config (title, description, og image)
+next-seo default config (title, description, og image)
 
- /api/og route (satori) for dynamic og with avatar + “Engineer of things”
+/api/og route (satori) for dynamic og with avatar + “Engineer of things”
 
- Person JSON-LD with sameAs (github, x, linkedin)
+Person JSON-LD with sameAs (github, x, linkedin)
 
- robots.txt, sitemap.xml (next-sitemap)
+robots.txt, sitemap.xml (next-sitemap)
 
- analytics: Vercel Analytics or Plausible (no cookies)
+analytics: Vercel Analytics or Plausible (no cookies)
 
-10) accessibility & testing
+10. accessibility & testing
 
- colour contrast ≥ 4.5:1 for text; test on hover state too
+colour contrast ≥ 4.5:1 for text; test on hover state too
 
- keyboard: provide a “skills list” skip-link that focuses a plain HTML list mirroring the 3D labels (for screen readers)
+keyboard: provide a “skills list” skip-link that focuses a plain HTML list mirroring the 3D labels (for screen readers)
 
- add unit tests for data mappers; playwrite smoke test that:
+add unit tests for data mappers; playwrite smoke test that:
 
 loads page, waits for canvas, hovers first skill, asserts label scales
 
 mobile viewport tap focus works
 
-11) deployment
+11. deployment
 
- vercel project -> map thomasjamesgale.com, redirect www → apex
+vercel project -> map thomasjamesgale.com, redirect www → apex
 
- environment var for analytics key (if used)
+environment var for analytics key (if used)
 
- preview deployments comments enabled
+preview deployments comments enabled
 
-12) stretch ideas (later)
+12. stretch ideas (later)
 
- “pin” favourite skills; let users fling skills with pointer impulse
+“pin” favourite skills; let users fling skills with pointer impulse
 
- time-of-day driven lighting (hdr env swap)
+time-of-day driven lighting (hdr env swap)
 
- import from jsonresume / github readme to enrich content
+import from jsonresume / github readme to enrich content
 
- “tech constellations” groups with gentle spring lines between related skills
-
-
+“tech constellations” groups with gentle spring lines between related skills
 
 ## Dev
 
